@@ -1,4 +1,4 @@
-import util.LogLinesCollector;
+import util.linescollector.LogLinesCollector;
 import util.LogParser;
 
 import java.io.FileInputStream;
@@ -12,7 +12,7 @@ public class Main {
 
         Object r = LogParser.tryParseFromIStream(is, Charset.forName("UTF-8"))
                 .map(logLineResult -> {
-                    if(!logLineResult.isOk()){
+                    if (!logLineResult.isOk()) {
                         System.err.printf("Problem during parsing: %s\n", logLineResult.getErr().get());
                     }
 
@@ -20,7 +20,12 @@ public class Main {
                 })
                 .filter(Optional::isPresent)
                 .map(Optional::get)
-                .collect(new LogLinesCollector());
+                .collect(LogLinesCollector.builder()
+                        .setLinesInRangeCount(1000)
+                        .setLogLinePredicate(line -> line.delay <= 45 && (line.responseCode < 500 || line.responseCode >= 600) )
+                        .setRangesFilter(range -> range.availabilityRate < 99.9f)
+                        .build()
+                );
 
         int i = 4;
 
