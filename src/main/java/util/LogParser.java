@@ -7,47 +7,65 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 public class LogParser {
-    public static List<LogLine> parseFromIStream(InputStream is) throws IOException, ParseException {
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy:HH:mm:ss ZZZZ");
-        Pattern pattern = Pattern.compile("(\\d+\\.\\d+\\.\\d+\\.\\d+) - - \\[(.*)] \"(.*)\" (\\d+) \\d+ (\\d+\\.\\d+) .*");
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
-        List<LogLine> result = new ArrayList<>();
+    private static final String REQ_TIME_MASK = "dd/MM/yyyy:HH:mm:ss ZZZZ";
+    private static final Pattern LOG_LINE_PATTERN = Pattern.compile("(\\d+\\.\\d+\\.\\d+\\.\\d+) - - \\[(.*)] \"(.*)\" (\\d+) \\d+ (\\d+\\.\\d+) .*");
 
-        String nextLine;
-        while (null != (nextLine = reader.readLine())) {
-            Matcher matcher = pattern.matcher(nextLine);
+
+    public static Stream<Result<LogLine, ParsingProblemDescription>> tryParseFromIStream(InputStream is, Charset charset) {
+
+        SimpleDateFormat sdf = new SimpleDateFormat(REQ_TIME_MASK);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is, charset));
+
+
+        return reader.lines().map((line) -> {
+            Matcher matcher = LOG_LINE_PATTERN.matcher(line);
 
             if (matcher.matches()) {
+
+                Date reqTime;
+                try {
+                    reqTime = sdf.parse(matcher.group(2));
+                } catch (ParseException e) {
+                    return Result.err(
+                            new ParsingProblemDescription(
+                                    line,
+                                    String.format("Couldn't parse request time (expected format: %s)", REQ_TIME_MASK)
+                            ));
+                }
+
                 String address = matcher.group(1);
-                Date reqTime = sdf.parse(matcher.group(2));
                 String reqUrl = matcher.group(3);
                 int responseCode = Integer.parseInt(matcher.group(4));
                 float reqDelay = Float.parseFloat(matcher.group(5));
 
-                result.add(new LogLine(address, reqTime, reqUrl, responseCode, reqDelay));
+                return Result.ok(new LogLine(address, reqTime, reqUrl, responseCode, reqDelay));
             } else {
-                // todo: обрботать ошибку парсинга
+                return Result.err(new ParsingProblemDescription(line, "Regex doesn't match"));
             }
+        });
+    }
+
+    public static class ParsingProblemDescription {
+        public final String logLine;
+        public final String problemDescription;
+
+        public ParsingProblemDescription(String logLine, String problemDescription) {
+            this.logLine = logLine;
+            this.problemDescription = problemDescription;
         }
 
-        result.sort((a, b) -> {
-            if(a.reqTime.before(b.reqTime)){
-                return -1;
-            }
-            if(a.reqTime.after(b.reqTime)){
-                return 1;
-            }
-
-            return 0;
-        });
-
-        return result;
+        @Override
+        public String toString() {
+            return "ParsingProblemDescription{" +
+                    "logLine='" + logLine + '\'' +
+                    ", problemDescription='" + problemDescription + '\'' +
+                    '}';
+        }
     }
 }

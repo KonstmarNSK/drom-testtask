@@ -1,18 +1,29 @@
-import util.LogLine;
+import util.LogLinesCollector;
 import util.LogParser;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.util.List;
-import java.util.Scanner;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.nio.charset.Charset;
+import java.util.Optional;
 
 public class Main {
     public static void main(String[] args) throws Exception {
         InputStream is = new FileInputStream("./access.log");
 
-        List<LogLine> logLineList = LogParser.parseFromIStream(is);
+        Object r = LogParser.tryParseFromIStream(is, Charset.forName("UTF-8"))
+                .map(logLineResult -> {
+                    if(!logLineResult.isOk()){
+                        System.err.printf("Problem during parsing: %s\n", logLineResult.getErr().get());
+                    }
+
+                    return logLineResult.getVal();
+                })
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(new LogLinesCollector());
+
         int i = 4;
+
     }
+
 }
