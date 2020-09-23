@@ -12,4 +12,13 @@ public class LogsRange {
         this.timeEnd = timeEnd;
         this.availabilityRate = availabilityRate;
     }
+
+    @Override
+    public String toString() {
+        return "LogsRange{" +
+                "timeStart=" + timeStart +
+                ", timeEnd=" + timeEnd +
+                ", availabilityRate=" + availabilityRate +
+                '}';
+    }
 }

@@ -1,7 +1,6 @@
 package util;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
@@ -13,8 +12,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 public class LogParser {
-    private static final String REQ_TIME_MASK = "dd/MM/yyyy:HH:mm:ss ZZZZ";
-    private static final Pattern LOG_LINE_PATTERN = Pattern.compile("(\\d+\\.\\d+\\.\\d+\\.\\d+) - - \\[(.*)] \"(.*)\" (\\d+) \\d+ (\\d+\\.\\d+) .*");
+    private static final String REQ_TIME_MASK = "dd/MM/yyyy:HH:mm:ss";
+    private static final Pattern LOG_LINE_PATTERN = Pattern.compile("(\\d+\\.\\d+\\.\\d+\\.\\d+) - - \\[(.*) .*] \"(.*)\" (\\d+) \\d+ (\\d+\\.\\d+) .*");
 
 
     public static Stream<Result<LogLine, ParsingProblemDescription>> tryParseFromIStream(InputStream is, Charset charset) {
