@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 
 public class LogParser {
     private static final String REQ_TIME_MASK = "dd/MM/yyyy:HH:mm:ss";
-    private static final Pattern LOG_LINE_PATTERN = Pattern.compile("(\\d+\\.\\d+\\.\\d+\\.\\d+) - - \\[(.*) .*] \"(.*)\" (\\d+) \\d+ (\\d+\\.\\d+) .*");
+    private static final Pattern LOG_LINE_PATTERN = Pattern.compile("(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) - - \\[(\\d{2}/\\d{2}/\\d{4}:\\d{2}:\\d{2}:\\d{2}) [\\+\\-]\\d{4}] \"(.*)\" (\\d{3}) \\d+ (\\d+\\.\\d+) .*");
 
 
     public static Stream<Result<LogLine, ParsingProblemDescription>> tryParseFromIStream(InputStream is, Charset charset) {
