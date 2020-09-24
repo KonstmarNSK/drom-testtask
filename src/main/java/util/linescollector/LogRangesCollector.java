@@ -7,19 +7,22 @@ import java.util.*;
 import java.util.function.*;
 import java.util.stream.Collector;
 
-public class LogLinesCollector implements Collector<LogLine, LogLinesCollector.Accumulator, List<LogsRange>> {
-    private final int linesInRangeCount;
-    private final Predicate<LogsRange> rangesFilter;
-    private final Predicate<LogLine> logLinePredicate;
+/**
+ * Collector that collects {@link LogLine} objects into {@link LogsRange} objects
+ */
+public class LogRangesCollector implements Collector<LogLine, LogRangesCollector.Accumulator, List<LogsRange>> {
+    private final int linesInRangeCount;                    // max lines count in one range
+    private final Predicate<LogsRange> rangesFilter;        // function that returns true if given range must be returned
+    private final Predicate<LogLine> logLinePredicate;      // function that returns false if given line indicates a problem
 
-    LogLinesCollector(int linesInRangeCount, Predicate<LogsRange> rangesFilter, Predicate<LogLine> logLinePredicate) {
+    LogRangesCollector(int linesInRangeCount, Predicate<LogsRange> rangesFilter, Predicate<LogLine> logLinePredicate) {
         this.linesInRangeCount = linesInRangeCount;
         this.rangesFilter = rangesFilter;
         this.logLinePredicate = logLinePredicate;
     }
 
-    public static LogLinesCollectorBuilder builder(){
-        return new LogLinesCollectorBuilder();
+    public static LogRangesCollectorBuilder builder(){
+        return new LogRangesCollectorBuilder();
     }
 
 

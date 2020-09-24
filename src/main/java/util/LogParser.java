@@ -16,13 +16,21 @@ public class LogParser {
     private static final Pattern LOG_LINE_PATTERN = Pattern.compile("(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) - - \\[(\\d{2}/\\d{2}/\\d{4}:\\d{2}:\\d{2}:\\d{2}) [\\+\\-]\\d{4}] \"(.*)\" (\\d{3}) \\d+ (\\d+\\.\\d+) .*");
 
 
+    /**
+     * Parses log lines from input stream into {@link LogLine} objects wrapped into {@link Result} objects that contain
+     * LogLine object if it was parsed successfully or description of parsing error.
+     *
+     * @param is stream from which logs are read
+     * @param charset input stream charset
+     * @return Stream of lines parsing results
+     */
     public static Stream<Result<LogLine, ParsingProblemDescription>> tryParseFromIStream(InputStream is, Charset charset) {
 
         SimpleDateFormat sdf = new SimpleDateFormat(REQ_TIME_MASK);
         BufferedReader reader = new BufferedReader(new InputStreamReader(is, charset));
 
 
-        return reader.lines().map((line) -> {
+        return reader.lines().map(line -> {
             Matcher matcher = LOG_LINE_PATTERN.matcher(line);
 
             if (matcher.matches()) {

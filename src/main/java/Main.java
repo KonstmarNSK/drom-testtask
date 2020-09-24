@@ -1,15 +1,10 @@
 import util.Configs;
 import util.LogsRange;
-import util.linescollector.LogLinesCollector;
+import util.linescollector.LogRangesCollector;
 import util.LogParser;
 
-import java.io.FileInputStream;
-import java.io.InputStream;
 import java.nio.charset.Charset;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 public class Main {
 
@@ -34,22 +29,14 @@ public class Main {
                 })
                 .filter(Optional::isPresent)
                 .map(Optional::get)
-                .collect(LogLinesCollector.builder()
+                .collect(LogRangesCollector.builder()
                         .setLinesInRangeCount(1000)
                         .setLogLinePredicate(line -> line.delay <= cfg.maxRequestDelayMs && (line.responseCode < 500 || line.responseCode >= 600))
                         .setRangesFilter(range -> range.availabilityRate < cfg.minAvailabilityRate)
                         .build()
                 );
 
-        badRanges.sort((a, b) -> {
-            if(a.timeStart.before(b.timeStart)){
-                return -1;
-            }else if(a.timeStart.after(b.timeStart)){
-                return 1;
-            }
-
-            return 0;
-        });
+        badRanges.sort(Comparator.comparing(a -> a.timeStart));
 
         badRanges.forEach(System.out::println);
     }
@@ -65,12 +52,12 @@ public class Main {
 
             // parameter name
             if (paramName == null) {
-                if (!argsParamsNames.contains(currParam)){
+                if (!argsParamsNames.contains(currParam)) {
                     System.err.printf("Parameter name '%s' is not allowed. Launch with -h key for help\n", currParam);
                     System.exit(0);
                 }
 
-                if(currParam.equals("-h")) {
+                if (currParam.equals("-h")) {
                     System.out.println("usage: cat log.log | java -jar log-analysis -u <MIN_AVAILABILITY_RATE> -t <MAX_REQUEST_DELAY_MS>");
                     System.exit(0);
                 }
@@ -80,7 +67,7 @@ public class Main {
             }
 
             // parameter value
-            switch (paramName){
+            switch (paramName) {
                 case "-t":
                     maxRequestDelayMs = Float.parseFloat(currParam);
                     break;
