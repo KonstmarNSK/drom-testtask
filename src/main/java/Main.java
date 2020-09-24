@@ -4,6 +4,7 @@ import util.linescollector.LogRangesCollector;
 import util.LogParser;
 
 import java.nio.charset.Charset;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class Main {
@@ -38,7 +39,15 @@ public class Main {
 
         badRanges.sort(Comparator.comparing(a -> a.timeStart));
 
-        badRanges.forEach(System.out::println);
+        SimpleDateFormat outDateFormat = new SimpleDateFormat("HH:mm:ss");
+
+
+        badRanges.forEach(logsRange ->
+                System.out.printf("%8s - %8s  %.1f\n",
+                        outDateFormat.format(logsRange.timeStart),
+                        outDateFormat.format(logsRange.timeEnd),
+                        logsRange.availabilityRate
+                ));
     }
 
 
